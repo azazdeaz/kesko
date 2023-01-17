@@ -7,7 +7,7 @@ env = gym.make(
     f"pykesko:{ENV}",
     max_steps=1_000,
     render_mode="human",
-    backend="tcp",
+    # backend="tcp",
 )
 obs, _ = env.reset()
 for i in range(10_000):

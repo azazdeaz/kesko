@@ -99,6 +99,20 @@ pub fn handle_serializable_state_request(
                         })
                         .collect();
 
+                    
+                    // get orientations of all the child bodies
+                    let child_orientations: BTreeMap<String, Quat> = root
+                        .child_map
+                        .iter()
+                        .map(|(name, entity)| {
+                            let rotation = match multibody_child_query.get(*entity) {
+                                Ok((_, transform)) => transform.rotation,
+                                Err(_) => Quat::default(),
+                            };
+                            (name.clone(), rotation)
+                        })
+                        .collect();
+
                     // Get joint angles
                     let joint_states: BTreeMap<String, Option<JointState>> = root
                         .child_map
@@ -124,6 +138,7 @@ pub fn handle_serializable_state_request(
                         velocity: root.linvel,
                         angular_velocity: root.angvel,
                         relative_positions: Some(child_positions),
+                        relative_orientations: Some(child_orientations),
                         joint_states: Some(joint_states),
                     }
                 })

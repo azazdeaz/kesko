@@ -58,6 +58,7 @@ class MultibodyStates(BaseModel):
     velocity: list
     angular_velocity: list
     relative_positions: dict[str, list[float]]
+    relative_orientations: dict[str, list[float]]
     joint_states: dict[str, Optional[Union[RevoluteJointState, PrismaticJointState]]]
 
 

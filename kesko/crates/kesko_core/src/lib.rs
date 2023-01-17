@@ -34,8 +34,8 @@ impl Plugin for CorePlugin {
         app.insert_resource(ClearColor(Color::hex("FFFFFF").unwrap()))
             .insert_resource(WindowDescriptor {
                 title: String::from("Kesko 0.0.4"),
-                width: 1920.0,
-                height: 1080.0,
+                width: 640.0,
+                height: 480.0,
                 position: WindowPosition::Centered(MonitorSelection::Primary),
                 fit_canvas_to_parent: true,
                 canvas: Some("#kesko-wasm".to_string()),

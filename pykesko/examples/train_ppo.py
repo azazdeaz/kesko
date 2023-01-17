@@ -8,7 +8,7 @@ from stable_baselines3.common.vec_env import SubprocVecEnv
 from stable_baselines3.common.utils import set_random_seed
 
 ENV = "Spider-v0"
-FULL_ENV = f"kesko:kesko/{ENV}"
+FULL_ENV = f"pykesko:{ENV}"
 MODEL_CLASS = PPO
 MODEL_NAME = f"{ENV}_{MODEL_CLASS.__name__}"
 TIME_STEPS = 8_000_000
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     model = PPO(
         "MlpPolicy",
         env,
-        tensorboard_log=f"./ml/tb_logs/{MODEL_NAME}_tb/",
+        # tensorboard_log=f"./ml/tb_logs/{MODEL_NAME}_tb/",
         n_steps=N_STEPS,
         n_epochs=N_EPOCHS,
         batch_size=BATCH_SIZE,

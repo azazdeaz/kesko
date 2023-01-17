@@ -1,6 +1,6 @@
 from multiprocessing import Process
 from time import time
-from pykesko import Model, Kesko
+from pykesko import KeskoModel, _KeskoApp as Kesko
 import json
 
 
@@ -10,8 +10,8 @@ def run(timesteps):
 
     kesko = Kesko()
     kesko.init_headless()
-    kesko.spawn(model=Model.Plane, position=[0.0, 0.0, 0.0], color=[1.0, 1.0, 1.0])
-    kesko.spawn(model=Model.Spider, position=[0.0, 2.0, 0.0], color=[1.0, 0.0, 0.0])
+    kesko.spawn(model=KeskoModel.Plane, position=[0.0, 0.0, 0.0], color=[1.0, 1.0, 1.0])
+    kesko.spawn(model=KeskoModel.Spider, position=[0.0, 2.0, 0.0], color=[1.0, 0.0, 0.0])
 
     # Will need to step since we cannot get a response directly
     kesko.step()

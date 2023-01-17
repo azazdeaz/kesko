@@ -4,6 +4,7 @@ from queue import Queue
 import gym
 from gym.spaces.box import Box
 import numpy as np
+from scipy.spatial.transform import Rotation
 
 from ..backend import BackendType, RenderMode
 from ..kesko import Kesko
@@ -19,6 +20,8 @@ from ..protocol.response import KeskoResponse, MultibodyStates, CollisionStarted
 from ..color import Color
 from pykesko import KeskoModel
 from ..utils import action_space_from_limits
+import rerun
+from rerun.log.annotation import AnnotationInfo, ClassDescription
 
 
 class SpiderEnv(gym.Env):
@@ -32,6 +35,7 @@ class SpiderEnv(gym.Env):
         reward_step_length: int = 5,
         large_movement_reward_factor: float = 1.0,
         joint_acceleration_reward_factor: float = 0.02,
+        connect_rerun: bool = True,
     ):
         """
         Creates the spider environment. A four legged agent which is tasked with
@@ -71,6 +75,7 @@ class SpiderEnv(gym.Env):
         self.reward_step_length = reward_step_length
         self.large_movement_reward_factor = large_movement_reward_factor
         self.joint_acceleration_reward_factor = joint_acceleration_reward_factor
+        self.connect_rerun = connect_rerun
 
         self.past_states_queue = Queue(reward_step_length)
         self.step_count = 0
@@ -78,6 +83,17 @@ class SpiderEnv(gym.Env):
         self.reward_survive = 0.0
         self.reward_acceleration = 0.0
         self.reward_large_movements = 0.0
+
+        self.parts = [
+            AnnotationInfo(id=1, label='left front leg x'),
+            AnnotationInfo(id=2, label='left front leg z'),
+            AnnotationInfo(id=3, label='left rear leg x'),
+            AnnotationInfo(id=4, label='left rear leg z'),
+            AnnotationInfo(id=5, label='right front leg x'),
+            AnnotationInfo(id=6, label='right front leg z'),
+            AnnotationInfo(id=7, label='right rear leg x'),
+            AnnotationInfo(id=8, label='right rear leg z'),
+        ]
 
         # setup kesko
         mode = RenderMode.WINDOW if self.render_mode == "human" else RenderMode.HEADLESS
@@ -90,6 +106,20 @@ class SpiderEnv(gym.Env):
         self._setup()
 
     def _setup(self) -> Tuple[np.ndarray, dict]:
+
+        if self.connect_rerun:
+            rerun.init("spider_env")
+            rerun.connect()
+
+        rerun.log_annotation_context(
+            "/",
+            ClassDescription(
+                info=AnnotationInfo(label="Spider"),
+                keypoint_annotations=[AnnotationInfo(id=part.id, label="") for part in self.parts],
+                keypoint_connections=[(0,1), (0,3), (0,5), (0,7), (1,2), (3,4), (5,6), (7,8)],
+            ),
+        )
+        rerun.log_view_coordinates("world", xyz="RUB", timeless=True)
 
         # Spawn bodies
         self._kesko.send(
@@ -160,6 +190,17 @@ class SpiderEnv(gym.Env):
                 done = True
 
         self.step_count += 1
+
+        rerun.log_scalar("step_count", self.step_count)
+        rerun.log_scalar("reward", reward)
+
+        points = [(state.position, 0)] + [(state.relative_positions[part.label], part.id) for part in self.parts]
+        points = list(zip(*points))
+        rerun.log_points(f"world/points", points[0],keypoint_ids=points[1])
+        # for part in self.parts:
+            # translation = state.relative_positions[part]
+            # rotation = state.relative_orientations[part]
+            # rerun.log_rigid3(f"world/{part}", parent_from_child=(translation, rotation))
 
         state = self._to_numpy(state)
         return state, reward, done, done, {}

@@ -23,6 +23,7 @@ pub struct MultiBodyState {
     pub velocity: Vec3,
     pub angular_velocity: Vec3,
     pub relative_positions: Option<BTreeMap<String, Vec3>>,
+    pub relative_orientations: Option<BTreeMap<String, Quat>>,
     pub joint_states: Option<BTreeMap<String, Option<JointState>>>,
 }
 
